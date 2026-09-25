@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Civix",
+    "slug": "civix-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.civix.superapp",
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0f19"
+      }
+    }
+  }
+}
