@@ -12,31 +12,34 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Allocate 10GB Swap (Prevents Memory Crash)
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Setup Java JDK
+      - name: Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Accept Android Licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Prebuild Android Project
+      - name: Prebuild Android Native Files
         run: npx expo prebuild --platform android --clean --non-interactive
 
       - name: Compile Android Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dorg.gradle.daemon=false"
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK to GitHub
         uses: actions/upload-artifact@v4
