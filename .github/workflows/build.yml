@@ -28,16 +28,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
       - name: Prebuild Android Native Files
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Build Standalone Release APK
+      - name: Configure Signing and Build Standalone APK
         run: |
           cd android
           chmod +x gradlew
+          # Point release build to debug signing key so Gradle outputs an installable APK
+          sed -i 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/g' app/build.gradle || true
           export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dorg.gradle.daemon=false"
           ./gradlew assembleRelease --no-daemon
 
