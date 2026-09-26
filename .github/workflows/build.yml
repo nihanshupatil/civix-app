@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Allocate 10GB Swap (Prevents Memory Crash)
+      - name: Setup Virtual Swap Memory
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 10
@@ -27,6 +27,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
@@ -34,15 +35,15 @@ jobs:
       - name: Prebuild Android Native Files
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Compile Android Debug APK
+      - name: Build Standalone Release APK
         run: |
           cd android
           chmod +x gradlew
           export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dorg.gradle.daemon=false"
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK to GitHub
+      - name: Upload Standalone APK
         uses: actions/upload-artifact@v4
         with:
-          name: Civix-App-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: Civix-Standalone-APK
+          path: android/app/build/outputs/apk/release/*.apk
